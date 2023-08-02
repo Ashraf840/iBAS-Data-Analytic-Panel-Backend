@@ -5,7 +5,7 @@ from .language import Language
 
 class Answer(models.Model):
     answer = models.TextField(verbose_name='Answer')
-    language = models.ForeignKey(Language, on_delete=models.DO_NOTHING)
+    language = models.ForeignKey(Language, related_name='ans_lang_name', on_delete=models.DO_NOTHING)
     created_by = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     created_at = models.DateTimeField(verbose_name="Created at", auto_now_add=True)
     update_at = models.DateTimeField(verbose_name="Updated at", auto_now=True)
