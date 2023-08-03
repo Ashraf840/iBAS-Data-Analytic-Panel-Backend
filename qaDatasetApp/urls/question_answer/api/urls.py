@@ -4,9 +4,13 @@ from qaDatasetApp.views.question_answer.api import question_answer_crud as qacru
 qa_api_name = 'QADatasetAppQuesAnsAPIEntries'
 
 urlpatterns = [
-    path("id/<int:pk>/", qacrud.AnswerDetail.as_view(), name="AnswerDetail"),
-    path("language/<str:language>/", qacrud.AnswerDetail.as_view(), name="AnswerDetail"),
-    path("created-by/<str:created_by>/", qacrud.AnswerDetail.as_view(), name="AnswerDetail"),
+    # [Answer APIs]
+    path("", qacrud.AnswerList.as_view(), name="AnswerList"),
+    path("id/<int:pk>/", qacrud.AnswerDetail.as_view(), name="AnswerDetail"),  # int-query by answer-id
+    path("language/<int:language>/", qacrud.AnswerDetail.as_view(), name="AnswerDetail"),  # int-query by language-id
+    path("created-by/<int:created_by>/", qacrud.AnswerDetail.as_view(), name="AnswerDetail"),
 
+    # [Question APIs]
+    path("", qacrud.QuestionList.as_view(), name="QuestionList"),
     path('test-list/', qacrud.test_list, name='test'),
 ]

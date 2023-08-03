@@ -8,6 +8,7 @@ from qaDatasetApp.serializers.question_answer import question_answer as qas
 from rest_framework import generics
 from qaDatasetApp.mixins import multipleLookupFields as mlf
 from rest_framework import status
+from qaDatasetApp.mixins.paginator.PageNumberPagination import main
 
 
 def test_list(request):
@@ -16,7 +17,8 @@ def test_list(request):
 
 class AnswerDetail(mlf.MultipleFieldLookupMixin, generics.RetrieveUpdateDestroyAPIView):
     # [Resource]
-    #   - [General] https://www.agiliq.com/blog/2019/05/django-rest-framework-retrieveupdatedestroyapiview/#retrieveupdatedestroyapiview
+    #   - [General]
+    #       https://www.agiliq.com/blog/2019/05/django-rest-framework-retrieveupdatedestroyapiview/#retrieveupdatedestroyapiview
     queryset = qam.Answer.objects.all()
     serializer_class = qas.Answer
     lookup_fields = ('pk', 'language', 'created_by')
@@ -30,3 +32,21 @@ class AnswerDetail(mlf.MultipleFieldLookupMixin, generics.RetrieveUpdateDestroyA
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)     # calling the 'update' method of "Answer" serializer-class
         return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
+
+
+class AnswerList(generics.ListCreateAPIView):
+    queryset = qam.Answer.objects.all()
+    serializer_class = qas.Answer
+    pagination_class = main.StandardResultsSetPaginationMixin
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)     # calling the 'create' method of "Answer" serializer-class
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class QuestionList(generics.ListCreateAPIView):
+    queryset = qam.Question.objects.all()
+    serializer_class = qas.Question
+    pagination_class = main.StandardResultsSetPaginationMixin
