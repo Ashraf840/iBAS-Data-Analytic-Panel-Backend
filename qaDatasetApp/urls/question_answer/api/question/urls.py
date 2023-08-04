@@ -7,4 +7,8 @@ question_api_name = 'QADatasetAppQuesAPIEntries'
 urlpatterns = [
     # [Question APIs]
     path("", qcrud.QuestionList.as_view(), name="QuestionList"),
+    path("id/<int:pk>/", qcrud.QuestionDetail.as_view(), name="QuestionDetail"),
+
+    # ---------------- [by 'answer-id' IS NOT ELIGIBLE, TURNED OFF, WILL BE USED WHILE USING DJANGO-FILTER]
+    # path("question/<int:answer>/", qcrud.QuestionDetail.as_view(), name="QuestionDetail"),
 ]

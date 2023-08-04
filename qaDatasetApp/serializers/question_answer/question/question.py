@@ -2,9 +2,9 @@ from rest_framework import serializers
 from qaDatasetApp.models import (
     question_answer as qam,
     language as lm)
-from ...language import language as ls
+# from ...language import language as ls
 from django.contrib.auth.models import User
-from ..answer.answer import Answer
+# from ..answer.answer import Answer
 
 
 class Question(serializers.ModelSerializer):
@@ -46,3 +46,9 @@ class Question(serializers.ModelSerializer):
             language=validated_data.get('language'),
             created_by=validated_data.get('created_by')
         )
+
+    def update(self, instance, validated_data):
+        instance.question, instance.answer, instance.language, instance.created_by = \
+            validated_data.get('question'), validated_data.get('answer'), validated_data.get('language'), validated_data.get('created_by')
+        instance.save()
+        return instance

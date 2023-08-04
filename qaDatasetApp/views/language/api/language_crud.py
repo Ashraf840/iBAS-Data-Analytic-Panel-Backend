@@ -19,4 +19,4 @@ class LanguageDetail(mlf.MultipleFieldLookupMixin, generics.RetrieveUpdateDestro
 class LanguageList(generics.ListCreateAPIView):
     queryset = lm.Language.objects.all()
     serializer_class = ls.Language
-    pagination_class = main.StandardResultsSetPaginationMixin
+    pagination_class = main.StandardResultsSetPaginationMixin   # 20 records/page; max-total-page: 1000

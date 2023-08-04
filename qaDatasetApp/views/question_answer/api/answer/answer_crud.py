@@ -14,7 +14,8 @@ class AnswerDetail(mlf.MultipleFieldLookupMixin, generics.RetrieveUpdateDestroyA
     #       https://www.agiliq.com/blog/2019/05/django-rest-framework-retrieveupdatedestroyapiview/#retrieveupdatedestroyapiview
     queryset = qam.Answer.objects.all()
     serializer_class = qas.Answer
-    lookup_fields = ('pk', 'language', 'created_by')
+    # lookup_fields = ('pk', 'language', 'created_by')  # TURNED OFF, SINCE THROWING "MultipleObjectReturned" error.
+    lookup_fields = ('pk',)     # NOT NECESSARY TO USE THIS LOC, OR THE 'MultipleFieldLookupMixin', SINCE OTHER FOREIGNKEYFIELD LOOKUP WILL THROW ERROR WHEN FINDS MULTIPLE RECORD.
 
     def update(self, request, *args, **kwargs):
         # [Update API Solution]
@@ -30,7 +31,7 @@ class AnswerDetail(mlf.MultipleFieldLookupMixin, generics.RetrieveUpdateDestroyA
 class AnswerList(generics.ListCreateAPIView):
     queryset = qam.Answer.objects.all()
     serializer_class = qas.Answer
-    pagination_class = main.StandardResultsSetPaginationMixin
+    pagination_class = main.StandardResultsSetPaginationMixin   # 20 records/page; max-total-page: 1000
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
