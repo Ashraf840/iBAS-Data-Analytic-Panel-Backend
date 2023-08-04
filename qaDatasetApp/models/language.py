@@ -13,6 +13,10 @@ class Language(models.Model):
     @staticmethod
     def get_object(*args, **kwargs):
         if kwargs.get('language_name') is not None:
+            # NB (kwargs.get('language_name')): "language_name" appears in the 'create()' method of 'Answer'
+            # serializer's validated_data as an ordered-dcit, since the "Language" model's string representation returns
+            # the "langauge_name" field.
+
             # [Resource of 'get_object_or_404']
             #   https://www.fullstackpython.com/django-shortcuts-get-object-or-404-examples.html
             return get_object_or_404(Language, language_name=kwargs.get('language_name'))

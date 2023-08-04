@@ -1,6 +1,6 @@
-from django.db.models import Q
-import operator
-from functools import reduce
+# from django.db.models import Q
+# import operator
+# from functools import reduce
 from django.shortcuts import get_object_or_404
 
 

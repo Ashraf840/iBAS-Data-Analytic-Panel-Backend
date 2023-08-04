@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from .language import Language
+from django.shortcuts import get_object_or_404
 
 
 class Answer(models.Model):
@@ -12,6 +13,13 @@ class Answer(models.Model):
 
     def __str__(self):
         return f'Answer: {self.answer}'
+
+    @staticmethod
+    def get_object(*args, **kwargs):
+        if kwargs.get('answer') is not None:
+            # [Resource of 'get_object_or_404']
+            #   https://www.fullstackpython.com/django-shortcuts-get-object-or-404-examples.html
+            return get_object_or_404(Answer, answer=kwargs.get('answer'))
 
 
 class Question(models.Model):

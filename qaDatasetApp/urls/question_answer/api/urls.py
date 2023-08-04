@@ -1,16 +1,18 @@
-from django.urls import path
+from django.urls import path, include
 from qaDatasetApp.views.question_answer.api import question_answer_crud as qacrud
 
 qa_api_name = 'QADatasetAppQuesAnsAPIEntries'
 
 urlpatterns = [
     # [Answer APIs]
-    path("", qacrud.AnswerList.as_view(), name="AnswerList"),
-    path("id/<int:pk>/", qacrud.AnswerDetail.as_view(), name="AnswerDetail"),  # int-query by answer-id
-    path("language/<int:language>/", qacrud.AnswerDetail.as_view(), name="AnswerDetail"),  # int-query by language-id
-    path("created-by/<int:created_by>/", qacrud.AnswerDetail.as_view(), name="AnswerDetail"),
+    # path("", qacrud.AnswerList.as_view(), name="AnswerList"),
+    path('answer/', include(('qaDatasetApp.urls.question_answer.api.answer.urls', 'answer_api_name'),
+                            namespace='QADatasetAppAnswerAPIEntries')),
 
     # [Question APIs]
-    path("", qacrud.QuestionList.as_view(), name="QuestionList"),
+    # path("", qacrud.QuestionList.as_view(), name="QuestionList"),
+    path('question/', include(('qaDatasetApp.urls.question_answer.api.question.urls', 'question_api_name'),
+                              namespace='QADatasetAppQuestionAPIEntries')),
+
     path('test-list/', qacrud.test_list, name='test'),
 ]
