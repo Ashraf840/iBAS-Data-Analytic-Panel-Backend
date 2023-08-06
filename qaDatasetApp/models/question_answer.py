@@ -24,7 +24,7 @@ class Answer(models.Model):
 
 class Question(models.Model):
     question = models.TextField(verbose_name='Question')
-    answer = models.ForeignKey(Answer, on_delete=models.DO_NOTHING)
+    answer = models.ForeignKey(Answer, on_delete=models.DO_NOTHING, null=True)      # New Question can be created without having the answer, since it'll be answered by specialized person later.
     language = models.ForeignKey(Language, on_delete=models.DO_NOTHING)
     created_by = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     created_at = models.DateTimeField(verbose_name="Created at", auto_now_add=True)

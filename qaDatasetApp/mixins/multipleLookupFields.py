@@ -5,7 +5,6 @@ from django.shortcuts import get_object_or_404
 from django.core.exceptions import MultipleObjectsReturned
 
 
-
 # TODO: Need to make the multiple lookup_fields CASE-INSENSITIVE in terms of string-value as query-params
 class MultipleFieldLookupMixin:
     def get_object(self):
@@ -27,7 +26,8 @@ class MultipleFieldLookupMixin:
         #     return obj
         # # [Resource]
         # #   - [MultipleObjectsReturned] https://stackoverflow.com/a/65017689
-        # #   - [get_list]
+        # #   - [get_list (from ques sample)] https://stackoverflow.com/q/12950250
+        # #   - [get_list (Doc)] https://docs.djangoproject.com/en/4.2/topics/http/shortcuts/#get-list-or-404
         # except MultipleObjectsReturned as MOR:
         #     obj_list = get_list_or_404(queryset, **filter)
         #     self.check_object_permissions(self.request, obj_list)
