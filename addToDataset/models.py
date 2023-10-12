@@ -6,3 +6,5 @@ class SuggestiveQuestions(models.Model):
     marked_for_removal = models.BooleanField(default=False)
     def __str__(self):
         return self.text
+
+

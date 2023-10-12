@@ -9,23 +9,13 @@ from .models import SuggestiveQuestions
 from .serializers import SuggestiveQuestionsSerializer
 
 
-
-# @api_view(['POST'])
-# def addToDataset(request):
-#     if request.method == "POST":
-#         print("record is added to dataset!")
-#         print("request.data:", request.data)
-#         # return HttpResponse("record is added to dataset!")
-#         return Response({'msg': "OK"}, status=status.HTTP_201_CREATED)
-
-
 @api_view(['POST'])
 def addToDataset(request):
     if request.method == "POST":
         print(request.data)
-        # Assuming request.data contains the 'id' of the record you want to retrieve
-        record_id = request.data  # Change 'id' to the actual field name if it's different
-
+        record_id = request.data
+        return Response({'msg': 'Added to dataset'}, status=status.HTTP_200_OK)
+        
         try:
             # Query the database to retrieve the specific record by its ID
             record = qadm.QADataset.objects.get(pk=record_id)
@@ -47,28 +37,17 @@ def addToDataset(request):
             }
             print("data:",data)
 
-            ##################################
             new_update_dataset = '/home/tanjim/workstation/ibas-project/ibas-chat-operator-chatbot/data/ibas_final_dataset.xlsx'
             existing_df = pd.read_excel(new_update_dataset, sheet_name='Sheet1', engine='openpyxl')
-            
-            # data = pd.DataFrame({'Questions': [question], 'Answers': [answer]})
-            # # updated_df = pd.concat([existing_df, df], ignore_index=True)
-            # updated_df = existing_df.append(data, ignore_index=True)
-            # updated_df.to_excel(new_update_dataset, index=False, engine='openpyxl')
-            # add_to_dataset(bangla_ques, bangla_ans, existing_df, new_update_dataset)
-            # add_to_dataset(tranliterated_ques, bangla_ans, existing_df, new_update_dataset)
-            # add_to_dataset(english_ques, english_ans, existing_df, new_update_dataset)
             data1 = pd.DataFrame({'Questions': [bangla_ques], 'Answers': [bangla_ans]})
             data2 = pd.DataFrame({'Questions': [tranliterated_ques], 'Answers': [bangla_ans]})
             data3 = pd.DataFrame({'Questions': [english_ques], 'Answers': [english_ans]})
 
-            # Concatenate the three DataFrames into one
             updated_df = pd.concat([existing_df, data1, data2, data3], ignore_index=True)
             updated_df.to_excel(new_update_dataset, index=False, engine='openpyxl')
 
             record.flags = True
             record.save()
-            #################################
 
             return Response(data, status=status.HTTP_200_OK)
 
@@ -103,5 +82,8 @@ def suggestiveQA(request):
         pass
 
 
-
+@api_view(['GET'])
+def genSuggestiveQa(request):
+    return Response({'status': 'succes'}, status=status.HTTP_200_OK)
+    pass
 

@@ -1,36 +1,8 @@
 from rest_framework import serializers
-from qaDatasetApp.models import (
-    question_answer as qam,
-    qa_dataset as qadm)
-# from django.contrib.auth.models import User
+from qaDatasetApp.models import qa_dataset as qadm
 
 
 class QADataset(serializers.ModelSerializer):
-    # bangla_ques = serializers.SlugRelatedField(
-    #     queryset=qam.Question.objects.all(),
-    #     slug_field='question'
-    # )
-    # english_ques = serializers.SlugRelatedField(
-    #     queryset=qam.Question.objects.all(),
-    #     slug_field='question'
-    # )
-    # transliterated_ques = serializers.SlugRelatedField(
-    #     queryset=qam.Question.objects.all(),
-    #     slug_field='question'
-    # )
-    # bangla_ans = serializers.SlugRelatedField(
-    #     queryset=qam.Answer.objects.all(),
-    #     slug_field='answer'
-    # )
-    # english_ans = serializers.SlugRelatedField(
-    #     queryset=qam.Answer.objects.all(),
-    #     slug_field='answer'
-    # )
-    # created_by = serializers.SlugRelatedField(
-    #     queryset=User.objects.all(),
-    #     slug_field='username'
-    # )
-
     class Meta:
         model = qadm.QADataset
         fields = '__all__'
