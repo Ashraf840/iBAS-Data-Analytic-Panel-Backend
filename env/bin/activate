@@ -38,7 +38,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="/home/tanjim/workstation/ibas-project/ibas-data-analytics-panel-backend/env"
+VIRTUAL_ENV="/home/tanjim/workstation/ibas-dap/ibas-data-analytics-panel-backend/env"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"

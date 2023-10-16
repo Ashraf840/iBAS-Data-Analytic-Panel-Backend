@@ -1,4 +1,4 @@
-#!/home/tanjim/workstation/ibas-project/ibas-data-analytics-panel-backend/env/bin/python3
+#!/home/tanjim/workstation/ibas-dap/ibas-data-analytics-panel-backend/env/bin/python3
 # -*- coding: utf-8 -*-
 import re
 import sys

@@ -8,4 +8,5 @@ urlpatterns = [
     path('add-to-dataset/', addToDataset),
     path('suggestive-qa/', suggestiveQA),
     path('gen-suggestive-qa/', genSuggestiveQa),
+    path('final-dataset/', include('final_dataset_operations.urls'))
 ]

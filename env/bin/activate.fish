@@ -33,7 +33,7 @@ end
 # Unset irrelevant variables.
 deactivate nondestructive
 
-set -gx VIRTUAL_ENV "/home/tanjim/workstation/ibas-project/ibas-data-analytics-panel-backend/env"
+set -gx VIRTUAL_ENV "/home/tanjim/workstation/ibas-dap/ibas-data-analytics-panel-backend/env"
 
 set -gx _OLD_VIRTUAL_PATH $PATH
 set -gx PATH "$VIRTUAL_ENV/bin" $PATH

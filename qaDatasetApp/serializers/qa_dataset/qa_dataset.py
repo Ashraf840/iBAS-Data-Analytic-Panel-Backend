@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from qaDatasetApp.models import qa_dataset as qadm
+from addToDataset.models import SuggestiveQuestions
+from django.db.models import Q
 
 
 class QADataset(serializers.ModelSerializer):
