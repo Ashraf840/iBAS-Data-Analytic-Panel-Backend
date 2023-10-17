@@ -105,9 +105,9 @@ def clean_database_table(request):
 def start_training(request):
     if request.method == 'GET':
         try:
-            response_data = {'message': 'Training started'}
-            return JsonResponse(response_data, status=200)
-
+            # response_data = {'message': 'Training started'}
+            # return JsonResponse(response_data, status=200)
+            create_dataset(request)
             response = requests.get('http://127.0.0.1:5000/train_automation')
             response.raise_for_status()  # Check for HTTP request errors
             
@@ -123,21 +123,21 @@ def start_training(request):
 # import pandas as pd
 def create_dataset(request):
     if request.method == 'GET':
-        data_folder = '/home/tanjim/workstation/ibas-chat-operator/data/'
-        dataset_file = os.path.join(data_folder, 'ibas_final_dataset.xlsx')
+        data_folder = '/home/tanjim/workstation/ibas-project/source'
+        dataset_file = os.path.join(data_folder, 'final_dataset.xlsx')
 
         # Retrieve data from the database
-        data = FinalDataset.objects.all().values('index', 'question', 'answer', 'language')
+        data = FinalDataset.objects.all().values('question', 'answer', 'language')
 
         # Create or load the dataset
         try:
             df = pd.read_excel(dataset_file, sheet_name='Sheet1')
         except FileNotFoundError:
-            df = pd.DataFrame(columns=['Index', 'Questions', 'Answers', 'Language'])
+            df = pd.DataFrame(columns=['Questions', 'Answers', 'Language'])
 
         # Create a new DataFrame with the database data
         new_data = pd.DataFrame(data)
-        new_data.columns = ['Index', 'Questions', 'Answers', 'Language']
+        new_data.columns = ['Questions', 'Answers', 'Language']
 
         # Concatenate the new data with the existing dataset
         df = pd.concat([df, new_data], ignore_index=True)
