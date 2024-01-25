@@ -6,4 +6,3 @@ class FinalDataset(models.Model):
     bangla_ans = models.TextField(default='')  
     english_ques = models.TextField(default='')
     english_ans = models.TextField(default='') 
-

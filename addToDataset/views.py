@@ -56,25 +56,20 @@ def addToDataset(request):
     
     return Response({'msg': 'Invalid request method'}, status=status.HTTP_400_BAD_REQUEST)
 
-
-
-# Suggestive QnA
 @api_view(['GET', 'POST'])
-def suggestiveQA(request):
+def pushSuggestiveQA(request):
     if request.method == "GET":
-        xlsx_file_path = '/home/robin/workstation/source/paraphrased_texts.xlsx'
-        # new_update_dataset = '/home/tanjim/workstation/ibas-project/ibas-chat-operator-chatbot/data/ibas_final_dataset.xlsx'
+        xlsx_file_path = '/home/zubair/workstation_2/source/paraphrased_texts.xlsx'
         if os.path.exists(xlsx_file_path):
             try:
                 df = pd.read_excel(xlsx_file_path, sheet_name='Sheet1')
-                if not len(SuggestiveQuestions.objects.all()) > 0:
-                    for index, row in df.iterrows():
-                        SuggestiveQuestions.objects.create(
-                            text=row['ParaphrasedText']
-                        )
-                questions = SuggestiveQuestions.objects.filter(marked_for_removal=False)
-                serializer = SuggestiveQuestionsSerializer(questions, many=True)
-                return Response(serializer.data, status=status.HTTP_200_OK)
+                for index, row in df.iterrows():
+                    text=row['ParaphrasedText']
+                    # questions = SuggestiveQuestions.objects.filter(marked_for_removal=False)
+                    # serializer = SuggestiveQuestionsSerializer(questions, many=True)
+                    entry = SuggestiveQuestions(text=text,)
+                    entry.save()
+                return Response({'msg': 'Successful'}, status=status.HTTP_200_OK)
             except Exception as e:
                 return HttpResponse(f'Error importing questions: {str(e)}')
         return Response({'msg': 'Get all suggestive qna'}, status=status.HTTP_200_OK)
@@ -82,10 +77,23 @@ def suggestiveQA(request):
         pass
 
 
+# Suggestive QnA
+@api_view(['GET', 'POST'])
+def suggestiveQA(request):
+    if request.method == "GET":
+        try:
+            questions = SuggestiveQuestions.objects.filter(marked_for_removal=False)
+            serializer = SuggestiveQuestionsSerializer(questions, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return HttpResponse(f'Error importing questions: {str(e)}')
+        return Response({'msg': 'Get all suggestive qna'}, status=status.HTTP_200_OK)
+    if request.method == "POST":
+        pass
+
 @api_view(['GET'])
 def genSuggestiveQa(request):
     if request.method == "GET":
         return Response({'msg': 'generate suggestive question QA'}, status=status.HTTP_200_OK)
     return Response({'status': 'succes'}, status=status.HTTP_200_OK)
     pass
-
