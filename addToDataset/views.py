@@ -76,15 +76,21 @@ def pushSuggestiveQA(request):
     if request.method == "POST":
         pass
 
-
 # Suggestive QnA
 @api_view(['GET', 'POST'])
 def suggestiveQA(request):
     if request.method == "GET":
         try:
-            questions = SuggestiveQuestions.objects.filter(marked_for_removal=False)
+            offset = int(request.query_params.get('offset', 0))
+            limit = int(request.query_params.get('limit', 0))
+            text = request.query_params.get('text', '')
+            count = SuggestiveQuestions.objects.filter(marked_for_removal=False).count()  
+            if text:
+                questions = SuggestiveQuestions.objects.filter(marked_for_removal=False,question__icontains=text)[offset:offset+limit]
+            else:
+                questions = SuggestiveQuestions.objects.filter(marked_for_removal=False)[offset:offset+limit]
             serializer = SuggestiveQuestionsSerializer(questions, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response({'suggestiveQA-data': serializer.data, 'count': count}, status=status.HTTP_200_OK)
         except Exception as e:
             return HttpResponse(f'Error importing questions: {str(e)}')
         return Response({'msg': 'Get all suggestive qna'}, status=status.HTTP_200_OK)
