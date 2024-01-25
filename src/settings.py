@@ -92,6 +92,18 @@ DATABASES = {
 }
 
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': 'ibas_chat_bot_operator_qa_db_3',
+#         'USER': 'ibas_chat_bot_operator_qa_admin',
+#         'PASSWORD': '1RNlz7q9y22$',
+#         'HOST': 'localhost',
+#         'PORT': '5432',
+#     }
+# }
+
+
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
