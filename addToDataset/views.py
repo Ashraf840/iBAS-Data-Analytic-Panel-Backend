@@ -83,17 +83,22 @@ def suggestiveQA(request):
         try:
             offset = int(request.query_params.get('offset', 0))
             limit = int(request.query_params.get('limit', 0))
-            text = request.query_params.get('text', '')
-            count = SuggestiveQuestions.objects.filter(marked_for_removal=False).count()  
+            text = request.query_params.get('searchText', '')
+            count = SuggestiveQuestions.objects.filter(marked_for_removal=False).count()
+            print('sth')
             if text:
+                questions = SuggestiveQuestions.objects.filter(marked_for_removal=False,text__icontains=text)[offset:offset]
+            elif limit:
+                questions = SuggestiveQuestions.objects.filter(marked_for_removal=False)[offset:offset + limit]
+            elif limit and text:
                 questions = SuggestiveQuestions.objects.filter(marked_for_removal=False,question__icontains=text)[offset:offset+limit]
+                print('questions', questions)
             else:
-                questions = SuggestiveQuestions.objects.filter(marked_for_removal=False)[offset:offset+limit]
+                questions = SuggestiveQuestions.objects.filter(marked_for_removal=False)
             serializer = SuggestiveQuestionsSerializer(questions, many=True)
-            return Response({'suggestiveQA-data': serializer.data, 'count': count}, status=status.HTTP_200_OK)
+            return Response({'data': serializer.data, 'count': count}, status=status.HTTP_200_OK)
         except Exception as e:
             return HttpResponse(f'Error importing questions: {str(e)}')
-        return Response({'msg': 'Get all suggestive qna'}, status=status.HTTP_200_OK)
     if request.method == "POST":
         pass
 
