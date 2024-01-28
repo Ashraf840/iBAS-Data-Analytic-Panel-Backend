@@ -66,7 +66,6 @@ def get_final_dataset_data(request):
     # ]
 
     return Response(simplified_data, status=status.HTTP_200_OK)
-######################################################
 
 @csrf_exempt
 def add_to_dataset(request):

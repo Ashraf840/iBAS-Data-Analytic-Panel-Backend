@@ -7,6 +7,7 @@ import pandas as pd
 import os
 from .models import SuggestiveQuestions
 from .serializers import SuggestiveQuestionsSerializer
+from django.db import connection
 
 
 @api_view(['POST'])
@@ -85,13 +86,55 @@ def suggestiveQA(request):
             limit = int(request.query_params.get('limit', 0))
             text = request.query_params.get('searchText', '')
             count = SuggestiveQuestions.objects.filter(marked_for_removal=False).count()
-            print('sth')
-            if text:
-                questions = SuggestiveQuestions.objects.filter(marked_for_removal=False,text__icontains=text)[offset:offset]
-            elif limit:
+            cursor = connection.cursor()
+            query = """
+            SELECT * FROM public."addToDataset_suggestivequestions"
+            WHERE text ILIKE %s 
+            AND marked_for_removal = false
+            """
+            
+            if text and not limit:
+                
+                cursor.execute(query, ['%' + text + '%'])
+                rows = cursor.fetchall()
+                count = len(rows)
+                print("not limit")
+                questions = []
+                for row in rows:
+                    data = {
+                    'id': row[0],
+                    'text': row[1],
+                    'answer': row[2],
+                    'marked_for_removal': row[3],
+                    'is_added_to_qa_dataset': row[4]
+                    }
+                    questions.append(data)
+                # questions = SuggestiveQuestions.objects.filter(marked_for_removal=False,text__icontains=text)[offset:offset]
+            elif limit and not text:
+                print("only limit")
+
                 questions = SuggestiveQuestions.objects.filter(marked_for_removal=False)[offset:offset + limit]
             elif limit and text:
-                questions = SuggestiveQuestions.objects.filter(marked_for_removal=False,question__icontains=text)[offset:offset+limit]
+                cursor.execute(query, ['%' + text + '%'])
+                row = cursor.fetchall()
+                count = len(row)
+                cursor.execute(query + " OFFSET %s LIMIT %s", ['%' + text + '%']+ [offset, limit])
+                rows = cursor.fetchall()
+                # count = len(rows)
+                print("limit::::::::::", count)
+
+                # print("questions", questions)
+                questions = []
+                for row in rows:
+                    data = {
+                    'id': row[0],
+                    'text': row[1],
+                    'answer': row[2],
+                    'marked_for_removal': row[3],
+                    'is_added_to_qa_dataset': row[4]
+                    }
+                    questions.append(data)
+                # questions = SuggestiveQuestions.objects.filter(marked_for_removal=False,question__icontains=text)[offset:offset+limit]
                 print('questions', questions)
             else:
                 questions = SuggestiveQuestions.objects.filter(marked_for_removal=False)
