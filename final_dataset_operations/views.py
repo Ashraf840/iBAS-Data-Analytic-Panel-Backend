@@ -11,6 +11,7 @@ from rest_framework import status
 from .serializers import FinalDatasetSerializer
 from rest_framework.decorators import api_view
 from qaDatasetApp.models import qa_dataset as qadm
+from django.db import connection
 
 #### If you want to use serializer use the following block of the code #####
 
@@ -23,49 +24,153 @@ from qaDatasetApp.models import qa_dataset as qadm
 ######################################################
 @api_view(['GET'])
 def get_final_dataset_data(request):
-    final_dataset_data = FinalDataset.objects.all()
+    # final_dataset_data = FinalDataset.objects.all()
 
-    count = 0
+    # count = 0
     
-    simplified_data = []
-    for entry in final_dataset_data:
-        count += 1
-        # print("id:", count)
-        bangla_entry = {
-            'id': count,
-            'question': entry.bangla_ques,
-            'answer': entry.bangla_ans,
-            'language': 'Bangla',
-        }
-        print("Bangla entry: ", bangla_entry)
-        simplified_data.append(bangla_entry)
+    # simplified_data = []
+    # for entry in final_dataset_data:
+    #     count += 1
+    #     # print("id:", count)
+    #     bangla_entry = {
+    #         'id': count,
+    #         'question': entry.bangla_ques,
+    #         'answer': entry.bangla_ans,
+    #         'language': 'Bangla',
+    #     }
+    #     print("Bangla entry: ", bangla_entry)
+    #     simplified_data.append(bangla_entry)
 
-        english_entry = {
-            'id': count,
-            'question': entry.english_ques,
-            'answer': entry.english_ans,
-            'language': 'English',
-        }
-        simplified_data.append(english_entry)
+    #     english_entry = {
+    #         'id': count,
+    #         'question': entry.english_ques,
+    #         'answer': entry.english_ans,
+    #         'language': 'English',
+    #     }
+    #     simplified_data.append(english_entry)
 
-        transliterated_entry = {
-            'id': count,
-            'question': entry.transliterated_ques,
-            'answer': entry.bangla_ans, 
-            'language': 'Transliterated',
-        }
-        simplified_data.append(transliterated_entry)
+    #     transliterated_entry = {
+    #         'id': count,
+    #         'question': entry.transliterated_ques,
+    #         'answer': entry.bangla_ans, 
+    #         'language': 'Transliterated',
+    #     }
+    #     simplified_data.append(transliterated_entry)
     
-    # Alternatively, you can use list comprehension for a more concise code:
-    # simplified_data = [
-    #     {'question': entry.bangla_ques, 'answer': entry.bangla_ans, 'language': 'Bangla'} for entry in final_dataset_data
-    # ] + [
-    #     {'question': entry.english_ques, 'answer': entry.english_ans, 'language': 'English'} for entry in final_dataset_data
-    # ] + [
-    #     {'question': entry.transliterated_ques, 'answer': entry.bangla_ans, 'language': 'Transliterated'} for entry in final_dataset_data
-    # ]
+    # # Alternatively, you can use list comprehension for a more concise code:
+    # # simplified_data = [
+    # #     {'question': entry.bangla_ques, 'answer': entry.bangla_ans, 'language': 'Bangla'} for entry in final_dataset_data
+    # # ] + [
+    # #     {'question': entry.english_ques, 'answer': entry.english_ans, 'language': 'English'} for entry in final_dataset_data
+    # # ] + [
+    # #     {'question': entry.transliterated_ques, 'answer': entry.bangla_ans, 'language': 'Transliterated'} for entry in final_dataset_data
+    # # ]
 
-    return Response(simplified_data, status=status.HTTP_200_OK)
+    # return Response(simplified_data, status=status.HTTP_200_OK)
+
+    offset = int(request.query_params.get('offset', 0))
+    limit = int(request.query_params.get('limit', 0))
+    text = request.query_params.get('searchText', '')
+
+    cursor = connection.cursor()
+
+    query = """
+    SELECT * FROM public.final_dataset_operations_finaldataset
+    WHERE
+        bangla_ques ILIKE %s OR
+        english_ques ILIKE %s OR
+        transliterated_ques ILIKE %s OR
+        bangla_ans ILIKE %s OR
+        english_ans ILIKE %s
+    """
+    count = 0   
+    if text and not limit:
+        cursor.execute(query, ['%' + text + '%'] * 5)
+        rows = cursor.fetchall()
+
+        simplified_data = []
+        for row in rows:
+            count += 1
+            bangla_entry = {
+                'id': count,
+                'did': row[0],
+                'question': row[1],
+                'answer': row[4],
+                'language': 'Bangla',
+            }
+            simplified_data.append(bangla_entry)
+
+            english_entry = {
+                'id': count,
+                'did': row[0],
+                'question': row[2],
+                'answer': row[5],
+                'language': 'English',
+            }
+            simplified_data.append(english_entry)
+
+            transliterated_entry = {
+                'id': count,
+                'did': row[0],
+                'question': row[3],
+                'answer': row[4],
+                'language': 'Transliterated',
+            }
+            simplified_data.append(transliterated_entry)
+            count = len(rows)
+
+    elif limit and not text:
+            limit = limit / 5
+            print("limit: ",limit)
+            queryset = queryset[offset: offset + limit]
+    elif limit and text:
+            limit = limit / 5
+            print("limit: ",limit)
+            cursor.execute(query, ['%' + text + '%'] * 5)
+            row = cursor.fetchall()
+            cursor.execute(query + " OFFSET %s LIMIT %s", ['%' + text + '%'] * 5 + [offset, limit])
+            rows = cursor.fetchall()
+            simplified_data = []
+
+            for row in rows:
+                count += 1
+                bangla_entry = {
+                    'id': count,
+                    'did': row[0],
+                    'question': row[1],
+                    'answer': row[4],
+                    'language': 'Bangla',
+                }
+                simplified_data.append(bangla_entry)
+
+                english_entry = {
+                    'id': count,
+                    'did': row[0],
+                    'question': row[2],
+                    'answer': row[5],
+                    'language': 'English',
+                }
+                simplified_data.append(english_entry)
+
+                transliterated_entry = {
+                    'id': count,
+                    'did': row[0],
+                    'question': row[3],
+                    'answer': row[4],
+                    'language': 'Transliterated',
+                }
+                simplified_data.append(transliterated_entry)
+            count = len(row)
+    else:
+        count = 0
+        simplified_data = []
+
+    data = {
+        'count': count,
+        'results': simplified_data
+    }
+
+    return Response(data, status=status.HTTP_200_OK)
 
 @csrf_exempt
 def add_to_dataset(request):
