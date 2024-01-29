@@ -68,7 +68,7 @@ def get_final_dataset_data(request):
 
     # return Response(simplified_data, status=status.HTTP_200_OK)
 
-    offset = int(request.query_params.get('offset', 0))
+    offset = int(request.query_params.get('offset', 0))/3
     limit = int(request.query_params.get('limit', 0))
     text = request.query_params.get('searchText', '')
 
@@ -83,6 +83,11 @@ def get_final_dataset_data(request):
         bangla_ans ILIKE %s OR
         english_ans ILIKE %s
     """
+
+    queryForNoText = """
+    SELECT * FROM public.final_dataset_operations_finaldataset
+    """
+
     count = 0   
     if text and not limit:
         cursor.execute(query, ['%' + text + '%'] * 5)
@@ -120,22 +125,19 @@ def get_final_dataset_data(request):
             count = len(rows)
 
     elif limit and not text:
-            limit = limit / 5
+            limit = limit / 3
             print("limit: ",limit)
-            queryset = queryset[offset: offset + limit]
-    elif limit and text:
-            limit = limit / 5
-            print("limit: ",limit)
-            cursor.execute(query, ['%' + text + '%'] * 5)
-            row = cursor.fetchall()
-            cursor.execute(query + " OFFSET %s LIMIT %s", ['%' + text + '%'] * 5 + [offset, limit])
+            cursor.execute(queryForNoText)
+            countRows = cursor.fetchall()
+            count = len(countRows)
+            cursor.execute(queryForNoText + " OFFSET %s LIMIT %s", [offset, limit])
             rows = cursor.fetchall()
+            datCount = 0
             simplified_data = []
-
             for row in rows:
-                count += 1
+                datCount += 1
                 bangla_entry = {
-                    'id': count,
+                    'id': datCount,
                     'did': row[0],
                     'question': row[1],
                     'answer': row[4],
@@ -144,7 +146,7 @@ def get_final_dataset_data(request):
                 simplified_data.append(bangla_entry)
 
                 english_entry = {
-                    'id': count,
+                    'id': datCount,
                     'did': row[0],
                     'question': row[2],
                     'answer': row[5],
@@ -153,20 +155,58 @@ def get_final_dataset_data(request):
                 simplified_data.append(english_entry)
 
                 transliterated_entry = {
-                    'id': count,
+                    'id': datCount,
                     'did': row[0],
                     'question': row[3],
                     'answer': row[4],
                     'language': 'Transliterated',
                 }
                 simplified_data.append(transliterated_entry)
-            count = len(row)
+    elif limit and text:
+            limit = limit / 3
+            print("limit: ",limit)
+            cursor.execute(query, ['%' + text + '%'] * 5)
+            rowCount = cursor.fetchall()
+            count = len(rowCount)
+            cursor.execute(query + " OFFSET %s LIMIT %s", ['%' + text + '%'] * 5 + [offset, limit])
+            rows = cursor.fetchall()
+            simplified_data = []
+            dataCount = 0
+
+            for row in rows:
+                dataCount += 1
+                bangla_entry = {
+                    'id': dataCount,
+                    'did': row[0],
+                    'question': row[1],
+                    'answer': row[4],
+                    'language': 'Bangla',
+                }
+                simplified_data.append(bangla_entry)
+
+                english_entry = {
+                    'id': dataCount,
+                    'did': row[0],
+                    'question': row[2],
+                    'answer': row[5],
+                    'language': 'English',
+                }
+                simplified_data.append(english_entry)
+
+                transliterated_entry = {
+                    'id': dataCount,
+                    'did': row[0],
+                    'question': row[3],
+                    'answer': row[4],
+                    'language': 'Transliterated',
+                }
+                simplified_data.append(transliterated_entry)
     else:
         count = 0
         simplified_data = []
 
     data = {
-        'count': count,
+        'count': count * 3,
         'results': simplified_data
     }
 

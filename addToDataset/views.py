@@ -60,7 +60,8 @@ def addToDataset(request):
 @api_view(['GET', 'POST'])
 def pushSuggestiveQA(request):
     if request.method == "GET":
-        xlsx_file_path = '/home/zubair/workstation_2/source/paraphrased_texts.xlsx'
+        xlsx_file_path = '/home/doer/Music/ChatBot/source/paraphrased_texts.xlsx'
+        # new_update_dataset = '/home/tanjim/workstation/ibas-project/ibas-chat-operator-chatbot/data/ibas_final_dataset.xlsx'
         if os.path.exists(xlsx_file_path):
             try:
                 df = pd.read_excel(xlsx_file_path, sheet_name='Sheet1')

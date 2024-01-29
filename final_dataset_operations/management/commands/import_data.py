@@ -8,7 +8,8 @@ class Command(BaseCommand):
     help = 'Import data from Excel file into FinalDataset model'
 
     def handle(self, *args, **options):
-        excel_file = '/home/zubair/workstation_2/source/Final-updated-dataset.xlsx'
+        excel_file = '/home/doer/Music/ChatBot/ibas-data-analytics-panel-backend/ibas_final_dataset.xlsx'
+        # excel_file = '/home/doer/Music/ChatBot/ibas-data-analytics-panel-backend/Final-updated-dataset.xlsx'
 
         data = pd.read_excel(excel_file, engine='openpyxl')
 
