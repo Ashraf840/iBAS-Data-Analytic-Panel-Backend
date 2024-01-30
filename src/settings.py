@@ -87,7 +87,7 @@ DATABASES = {
         'USER': 'ibas_admin',
         'PASSWORD': 'L10w$ShRU021',
         'HOST': 'localhost',
-        'PORT': '5431',
+        'PORT': '5432',
     }
 }
 

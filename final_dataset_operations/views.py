@@ -13,61 +13,8 @@ from rest_framework.decorators import api_view
 from qaDatasetApp.models import qa_dataset as qadm
 from django.db import connection
 
-#### If you want to use serializer use the following block of the code #####
-
-# @api_view(['GET'])
-# def get_final_dataset_data(request):
-#     final_dataset_data = FinalDataset.objects.all()
-#     serializer = FinalDatasetSerializer(final_dataset_data, many=True)
-#     return Response(serializer.data, status=status.HTTP_200_OK)
-
-######################################################
 @api_view(['GET'])
 def get_final_dataset_data(request):
-    # final_dataset_data = FinalDataset.objects.all()
-
-    # count = 0
-    
-    # simplified_data = []
-    # for entry in final_dataset_data:
-    #     count += 1
-    #     # print("id:", count)
-    #     bangla_entry = {
-    #         'id': count,
-    #         'question': entry.bangla_ques,
-    #         'answer': entry.bangla_ans,
-    #         'language': 'Bangla',
-    #     }
-    #     print("Bangla entry: ", bangla_entry)
-    #     simplified_data.append(bangla_entry)
-
-    #     english_entry = {
-    #         'id': count,
-    #         'question': entry.english_ques,
-    #         'answer': entry.english_ans,
-    #         'language': 'English',
-    #     }
-    #     simplified_data.append(english_entry)
-
-    #     transliterated_entry = {
-    #         'id': count,
-    #         'question': entry.transliterated_ques,
-    #         'answer': entry.bangla_ans, 
-    #         'language': 'Transliterated',
-    #     }
-    #     simplified_data.append(transliterated_entry)
-    
-    # # Alternatively, you can use list comprehension for a more concise code:
-    # # simplified_data = [
-    # #     {'question': entry.bangla_ques, 'answer': entry.bangla_ans, 'language': 'Bangla'} for entry in final_dataset_data
-    # # ] + [
-    # #     {'question': entry.english_ques, 'answer': entry.english_ans, 'language': 'English'} for entry in final_dataset_data
-    # # ] + [
-    # #     {'question': entry.transliterated_ques, 'answer': entry.bangla_ans, 'language': 'Transliterated'} for entry in final_dataset_data
-    # # ]
-
-    # return Response(simplified_data, status=status.HTTP_200_OK)
-
     offset = int(request.query_params.get('offset', 0))/3
     limit = int(request.query_params.get('limit', 0))
     text = request.query_params.get('searchText', '')
@@ -234,7 +181,6 @@ def add_to_dataset(request):
 def clean_database_table(request):
     if request.method == 'GET':
         try:
-            # Delete all records from the FinalDataset model
             FinalDataset.objects.all().delete()
             return JsonResponse({'message': 'Table cleaned successfully'}, status=200)
         except Exception as e:
@@ -246,12 +192,9 @@ def clean_database_table(request):
 def start_training(request):
     if request.method == 'GET':
         try:
-            # response_data = {'message': 'Training started'}
-            # return JsonResponse(response_data, status=200)
             create_dataset(request)
-            # response = requests.get('http://127.0.0.1:5000/train_automation')
             response = requests.get('http://127.0.0.1:5010/train_automation')
-            response.raise_for_status()  # Check for HTTP request errors
+            response.raise_for_status()
             
         except requests.exceptions.RequestException as e:
             print(f"Start training failed: {str(e)}")
@@ -262,17 +205,13 @@ def start_training(request):
         return JsonResponse(response_data, status=400)
 
 
-# import pandas as pd
 def create_dataset(request):
     if request.method == 'GET':
-        # data_folder = '/home/tanjim/workstation/ibas-project/source'
         data_folder = '/mnt/New Volume/workstation2/source'
         dataset_file = os.path.join(data_folder, 'final_dataset_5column.xlsx')
 
-        # Retrieve data from the database
         data = FinalDataset.objects.all().values( 'bangla_ans', 'bangla_ques', 'english_ans', 'english_ques', 'transliterated_ques')
 
-        # Create or load the dataset
         try:
             df = pd.read_excel(dataset_file, sheet_name='Sheet1')
             
@@ -282,14 +221,11 @@ def create_dataset(request):
         except FileNotFoundError:
             df = pd.DataFrame(columns=['bangla_ques', 'transliterated_ques', 'bangla_ans', 'english_ques','english_ans'])
 
-        # Create a new DataFrame with the database data
         new_data = pd.DataFrame(data)
         new_data.columns = ['bangla_ques', 'transliterated_ques', 'bangla_ans', 'english_ques','english_ans']
 
-        # Concatenate the new data with the existing dataset
         df = pd.concat([df, new_data], ignore_index=True)
 
-        # Save the dataset to the Excel file
         df.to_excel(dataset_file, sheet_name='Sheet1', index=False)
         print("dataset generated")
         response_data = {'generated': 'data generated'}
