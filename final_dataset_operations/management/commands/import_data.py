@@ -8,18 +8,19 @@ class Command(BaseCommand):
     help = 'Import data from Excel file into FinalDataset model'
 
     def handle(self, *args, **options):
-        excel_file = '/home/tanjim/workstation/ibas-project/source/ibas_final_dataset.xlsx'
+        excel_file = '/home/ubuntu/ibas_project/source/TADAspreadsheet.xlsx'
 
         data = pd.read_excel(excel_file, engine='openpyxl')
-
+        FinalDataset.objects.all().delete()
         # Define a function to detect the language
-        def detect_language(text):
-            try:
-                return detect(text)
-            except:
-                return 'Unknown'
+         #def detect_language(text):
+          #  try:
+           #     return detect(text)
+            #except:
+             #   return 'Unknown'
 
         # Separate questions and answers based on language
+        """
         bangla_questions = []
         transliterated_questions = []
         english_questions = []
@@ -73,3 +74,18 @@ class Command(BaseCommand):
             self.stdout.write(f"Question: {entry.question}, Answer: {entry.answer}, Language: {entry.language}")
 
         self.stdout.write(self.style.SUCCESS('Data imported successfully.'))
+        """
+        for _, row in data.iterrows():
+            bangla_ques = row['bangla_ques'].split('\n')[0]
+            transliterated_ques = row['transliterated_ques'].split('\n')[0]
+            bangla_ans = row['bangla_ans']
+            english_ques = row['english_ques'].split('\n')[0]
+            english_ans = row['english_ans']
+            entry = FinalDataset(
+                bangla_ques=bangla_ques,
+                transliterated_ques=transliterated_ques,
+                bangla_ans=bangla_ans,
+                english_ques=english_ques,
+                english_ans=english_ans,
+            )
+            entry.save()

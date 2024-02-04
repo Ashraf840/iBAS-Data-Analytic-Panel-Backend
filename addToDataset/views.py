@@ -37,7 +37,7 @@ def addToDataset(request):
             }
             print("data:",data)
 
-            new_update_dataset = '/home/tanjim/workstation/ibas-project/ibas-chat-operator-chatbot/data/ibas_final_dataset.xlsx'
+            new_update_dataset = '/home/ubuntu/ibas_project/source/ibas_final_dataset.xlsx'
             existing_df = pd.read_excel(new_update_dataset, sheet_name='Sheet1', engine='openpyxl')
             data1 = pd.DataFrame({'Questions': [bangla_ques], 'Answers': [bangla_ans]})
             data2 = pd.DataFrame({'Questions': [tranliterated_ques], 'Answers': [bangla_ans]})
@@ -62,7 +62,7 @@ def addToDataset(request):
 @api_view(['GET', 'POST'])
 def suggestiveQA(request):
     if request.method == "GET":
-        xlsx_file_path = '/home/tanjim/workstation/ibas-project/source/paraphrased_texts.xlsx'
+        xlsx_file_path = '/home/ubuntu/ibas_project/source/paraphrased_texts.xlsx'
         # new_update_dataset = '/home/tanjim/workstation/ibas-project/ibas-chat-operator-chatbot/data/ibas_final_dataset.xlsx'
         if os.path.exists(xlsx_file_path):
             try:

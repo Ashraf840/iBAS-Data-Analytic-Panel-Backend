@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,7 +26,7 @@ SECRET_KEY = 'django-insecure-aju9)kl4jl51@bcmyw#sc*4aei7c#v))b(mwrs93#_3me616f@
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['172.16.6.91', 'ibasdap.celloscope.net', 'ibasdap-api.celloscope.net']
 
 
 # Application definition
@@ -83,8 +84,9 @@ WSGI_APPLICATION = 'src.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'ibas_chat_bot_operator_qa_db_3',
-        'USER': 'ibas_chat_bot_operator_qa_admin',
+        #'NAME': 'idap_db',
+        'NAME': 'ibas_dap_db_test',
+        'USER': 'idap_db_admin',
         'PASSWORD': '1RNlz7q9y22$',
         'HOST': 'localhost',
         'PORT': '5432',
@@ -114,6 +116,10 @@ AUTH_PASSWORD_VALIDATORS = [
 CORS_ALLOWED_ORIGINS = [
     'http://127.0.0.1:4200',
     'http://localhost:4200',
+    'http://127.0.0.1:5010',
+    'http://localhost:5010',
+    'http://ibasdap-api.celloscope.net',
+    'http://ibasdap.celloscope.net',
 ]
 
 # Example of additional CORS settings
@@ -160,6 +166,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field

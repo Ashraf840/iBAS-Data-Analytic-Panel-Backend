@@ -12,83 +12,76 @@ from .serializers import FinalDatasetSerializer
 from rest_framework.decorators import api_view
 from qaDatasetApp.models import qa_dataset as qadm
 
+#### If you want to use serializer use the following block of the code #####
 
+# @api_view(['GET'])
+# def get_final_dataset_data(request):
+#     final_dataset_data = FinalDataset.objects.all()
+#     serializer = FinalDatasetSerializer(final_dataset_data, many=True)
+#     return Response(serializer.data, status=status.HTTP_200_OK)
 
-
+######################################################
 @api_view(['GET'])
 def get_final_dataset_data(request):
     final_dataset_data = FinalDataset.objects.all()
-    serializer = FinalDatasetSerializer(final_dataset_data, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    count = 0   
+    simplified_data = []
+    for entry in final_dataset_data:
+        count += 1
+        bangla_entry = {
+            'id': count,
+            'question': entry.bangla_ques,
+            'answer': entry.bangla_ans,
+            'language': 'Bangla',
+        }
+        simplified_data.append(bangla_entry)
 
+        english_entry = {
+            'id': count,
+            'question': entry.english_ques,
+            'answer': entry.english_ans,
+            'language': 'English',
+        }
+        simplified_data.append(english_entry)
 
-    # response_data = {"idx": {}}
-    # for idx, entry in enumerate(final_dataset_data, start=1):
-    #     response_data["idx"][idx] = {
-    #         'question': entry.question,
-    #         'answer': entry.answer,
-    #         'language': entry.language,
-    #     }
-    # return JsonResponse(response_data)
+        transliterated_entry = {
+            'id': count,
+            'question': entry.transliterated_ques,
+            'answer': entry.bangla_ans, 
+            'language': 'Transliterated',
+        }
+        simplified_data.append(transliterated_entry)
+    
+    # Alternatively, you can use list comprehension for a more concise code:
+    # simplified_data = [
+    #     {'question': entry.bangla_ques, 'answer': entry.bangla_ans, 'language': 'Bangla'} for entry in final_dataset_data
+    # ] + [
+    #     {'question': entry.english_ques, 'answer': entry.english_ans, 'language': 'English'} for entry in final_dataset_data
+    # ] + [
+    #     {'question': entry.transliterated_ques, 'answer': entry.bangla_ans, 'language': 'Transliterated'} for entry in final_dataset_data
+    # ]
 
+    return Response(simplified_data, status=status.HTTP_200_OK)
+######################################################
 
 @csrf_exempt
 def add_to_dataset(request):
     if request.method == 'POST':
         record_id = json.loads(request.body)
+        print("record_id:", record_id)
         record = qadm.QADataset.objects.get(pk=record_id)
-        # print(record_id)
         bangla_ques = record.bangla_ques
         english_ques = record.english_ques
         transliterated_ques = record.transliterated_ques
         bangla_ans = record.bangla_ans
         english_ans = record.english_ans
-        # print(bangla_ques, english_ques, transliterated_ques, bangla_ans, english_ans)
 
-        if bangla_ques and bangla_ans:
-            FinalDataset.objects.create(question=bangla_ques, answer=bangla_ans, language='Bangla')
-        if english_ques and english_ans:
-            FinalDataset.objects.create(question=english_ques, answer=english_ans, language='English')
+        FinalDataset.objects.create(bangla_ques=bangla_ques,transliterated_ques= transliterated_ques, bangla_ans=bangla_ans, english_ques=english_ques, english_ans=english_ans)
 
-        if transliterated_ques and bangla_ans:
-            FinalDataset.objects.create(question=transliterated_ques, answer=bangla_ans, language='Transliterated')
-        
         record.flags = True
         record.save()
 
         return JsonResponse({'message': 'Data added to the dataset'}, status=201)
-
-
-
-
-
-
-
-
-
-        #####################################################################################3
-        data = json.loads(request.body)
-        bangla_ques = data.get('bangla_ques')
-        english_ques = data.get('english_ques')
-        transliterated_ques = data.get('transliterated_ques')
-        bangla_ans = data.get('bangla_ans')
-        english_ans = data.get('english_ans')
-
-        # Create entries in the FinalDataset model based on the provided data
-        if bangla_ques and bangla_ans:
-            FinalDataset.objects.create(question=bangla_ques, answer=bangla_ans, language='Bangla')
-        if english_ques and english_ans:
-            FinalDataset.objects.create(question=english_ques, answer=english_ans, language='English')
-
-        if transliterated_ques and bangla_ans:
-            FinalDataset.objects.create(question=transliterated_ques, answer=bangla_ans, language='Transliterated')
-
-        return JsonResponse({'message': 'Data added to the dataset'}, status=201)
-        #####################################################################################3
-    else:
-        return JsonResponse({'error': 'Invalid request method'}, status=400)
-
-
 
 def clean_database_table(request):
     if request.method == 'GET':
@@ -105,11 +98,14 @@ def clean_database_table(request):
 def start_training(request):
     if request.method == 'GET':
         try:
-            # response_data = {'message': 'Training started'}
-            # return JsonResponse(response_data, status=200)
+            response_data = {'message': 'Training started'}
+            #return JsonResponse(response_data, status=200)
+            
             create_dataset(request)
-            response = requests.get('http://127.0.0.1:5000/train_automation')
+            #response = requests.get('http://127.0.0.1:5000/train_automation')
+            response = requests.get('http://127.0.0.1:5010/train_automation')
             response.raise_for_status()  # Check for HTTP request errors
+            return JsonResponse(response_data, status=200)
             
         except requests.exceptions.RequestException as e:
             print(f"Start training failed: {str(e)}")
@@ -123,21 +119,27 @@ def start_training(request):
 # import pandas as pd
 def create_dataset(request):
     if request.method == 'GET':
-        data_folder = '/home/tanjim/workstation/ibas-project/source'
-        dataset_file = os.path.join(data_folder, 'final_dataset.xlsx')
+        # data_folder = '/home/tanjim/workstation/ibas-project/source'
+        data_folder = '/home/ubuntu/ibas_project/source'
+        #dataset_file = os.path.join(data_folder, 'final_dataset_5column.xlsx')
+        dataset_file = os.path.join(data_folder, 'Final-updated-dataset.xlsx')
 
         # Retrieve data from the database
-        data = FinalDataset.objects.all().values('question', 'answer', 'language')
-
+        #data = FinalDataset.objects.all().values( 'bangla_ans', 'bangla_ques', 'english_ans', 'english_ques', 'transliterated_ques')
+        data = FinalDataset.objects.all().values( 'bangla_ques', 'transliterated_ques','bangla_ans', 'english_ques', 'english_ans')
         # Create or load the dataset
         try:
             df = pd.read_excel(dataset_file, sheet_name='Sheet1')
+            
+            df.drop(df.index, inplace=True)
+            df.to_excel(dataset_file, index=False)
+
         except FileNotFoundError:
-            df = pd.DataFrame(columns=['Questions', 'Answers', 'Language'])
+            df = pd.DataFrame(columns=['bangla_ques', 'transliterated_ques', 'bangla_ans', 'english_ques','english_ans'])
 
         # Create a new DataFrame with the database data
         new_data = pd.DataFrame(data)
-        new_data.columns = ['Questions', 'Answers', 'Language']
+        new_data.columns = ['bangla_ques', 'transliterated_ques', 'bangla_ans', 'english_ques','english_ans']
 
         # Concatenate the new data with the existing dataset
         df = pd.concat([df, new_data], ignore_index=True)
