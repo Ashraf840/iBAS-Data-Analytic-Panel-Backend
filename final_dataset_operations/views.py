@@ -13,147 +13,81 @@ from rest_framework.decorators import api_view
 from qaDatasetApp.models import qa_dataset as qadm
 from django.db import connection
 
-@api_view(['GET'])
+@api_view(['POST'])
 def get_final_dataset_data(request):
     offset = int(request.query_params.get('offset', 0))/3
-    limit = int(request.query_params.get('limit', 0))
+    limit = int(request.query_params.get('limit', 0))/3
     text = request.query_params.get('searchText', '')
+    data = json.loads(request.body)
+    training_status = data.get('status', None)
+    print("BODY: ", training_status)
 
     cursor = connection.cursor()
 
-    query = """
+    query = f"""
     SELECT * FROM public.final_dataset_operations_finaldataset
-    WHERE
-        bangla_ques ILIKE %s OR
-        english_ques ILIKE %s OR
-        transliterated_ques ILIKE %s OR
-        bangla_ans ILIKE %s OR
-        english_ans ILIKE %s
+    WHERE 1 = 1
     """
 
-    queryForNoText = """
-    SELECT * FROM public.final_dataset_operations_finaldataset
-    """
+    if training_status:
+        query += f" AND status = '{training_status}'"
+    
+    if text:
+        query += f""" AND ( bangla_ques ILIKE '%{text}%' OR
+          english_ques ILIKE '%{text}%' OR
+          transliterated_ques ILIKE '%{text}%' OR
+          bangla_ans ILIKE '%{text}%' OR
+          english_ans ILIKE '%{text}%') """
+    
+    cursor.execute(query)
+    countRows = cursor.fetchall()
+    totalcount = len(countRows)
+        
+    if limit:
+        query += f" limit {limit}"
 
-    count = 0   
-    if text and not limit:
-        cursor.execute(query, ['%' + text + '%'] * 5)
-        rows = cursor.fetchall()
+    if offset:
+        query += f" offset {offset}"
 
-        simplified_data = []
-        for row in rows:
-            count += 1
-            bangla_entry = {
-                'id': count,
-                'did': row[0],
-                'question': row[1],
-                'answer': row[4],
-                'language': 'Bangla',
-            }
-            simplified_data.append(bangla_entry)
+    cursor.execute(query)
+    rows = cursor.fetchall()
+    count = 0 
+    simplified_data = []
+    for row in rows:
+        count += 1
+        bangla_entry = {
+            'id': count,
+            'did': row[0],
+            'question': row[1],
+            'answer': row[4],
+            'language': 'Bangla',
+            'status' : row[6],
+        }
+        simplified_data.append(bangla_entry)
 
-            english_entry = {
-                'id': count,
-                'did': row[0],
-                'question': row[2],
-                'answer': row[5],
-                'language': 'English',
-            }
-            simplified_data.append(english_entry)
+        english_entry = {
+            'id': count,
+            'did': row[0],
+            'question': row[2],
+            'answer': row[5],
+            'language': 'English',
+            'status' : row[6],
+        }
+        simplified_data.append(english_entry)
 
-            transliterated_entry = {
-                'id': count,
-                'did': row[0],
-                'question': row[3],
-                'answer': row[4],
-                'language': 'Transliterated',
-            }
-            simplified_data.append(transliterated_entry)
-            count = len(rows)
+        transliterated_entry = {
+            'id': count,
+            'did': row[0],
+            'question': row[3],
+            'answer': row[4],
+            'language': 'Transliterated',
+            'status' : row[6],
 
-    elif limit and not text:
-            limit = limit / 3
-            print("limit: ",limit)
-            cursor.execute(queryForNoText)
-            countRows = cursor.fetchall()
-            count = len(countRows)
-            cursor.execute(queryForNoText + " OFFSET %s LIMIT %s", [offset, limit])
-            rows = cursor.fetchall()
-            datCount = 0
-            simplified_data = []
-            for row in rows:
-                datCount += 1
-                bangla_entry = {
-                    'id': datCount,
-                    'did': row[0],
-                    'question': row[1],
-                    'answer': row[4],
-                    'language': 'Bangla',
-                }
-                simplified_data.append(bangla_entry)
-
-                english_entry = {
-                    'id': datCount,
-                    'did': row[0],
-                    'question': row[2],
-                    'answer': row[5],
-                    'language': 'English',
-                }
-                simplified_data.append(english_entry)
-
-                transliterated_entry = {
-                    'id': datCount,
-                    'did': row[0],
-                    'question': row[3],
-                    'answer': row[4],
-                    'language': 'Transliterated',
-                }
-                simplified_data.append(transliterated_entry)
-    elif limit and text:
-            limit = limit / 3
-            print("limit: ",limit)
-            cursor.execute(query, ['%' + text + '%'] * 5)
-            rowCount = cursor.fetchall()
-            count = len(rowCount)
-            cursor.execute(query + " OFFSET %s LIMIT %s", ['%' + text + '%'] * 5 + [offset, limit])
-            rows = cursor.fetchall()
-            simplified_data = []
-            dataCount = 0
-
-            for row in rows:
-                dataCount += 1
-                bangla_entry = {
-                    'id': dataCount,
-                    'did': row[0],
-                    'question': row[1],
-                    'answer': row[4],
-                    'language': 'Bangla',
-                }
-                simplified_data.append(bangla_entry)
-
-                english_entry = {
-                    'id': dataCount,
-                    'did': row[0],
-                    'question': row[2],
-                    'answer': row[5],
-                    'language': 'English',
-                }
-                simplified_data.append(english_entry)
-
-                transliterated_entry = {
-                    'id': dataCount,
-                    'did': row[0],
-                    'question': row[3],
-                    'answer': row[4],
-                    'language': 'Transliterated',
-                }
-                simplified_data.append(transliterated_entry)
-    else:
-        count = 0
-        simplified_data = []
-
+        }
+        simplified_data.append(transliterated_entry)
+    
     data = {
-        'count': count * 3,
+        'count': totalcount * 3,
         'results': simplified_data
     }
 
