@@ -57,7 +57,7 @@ def get_final_dataset_data(request):
         count += 1
         bangla_entry = {
             'id': count,
-            'did': row[0],
+            'oid': row[0],
             'question': row[1],
             'answer': row[4],
             'language': 'Bangla',
@@ -67,7 +67,7 @@ def get_final_dataset_data(request):
 
         english_entry = {
             'id': count,
-            'did': row[0],
+            'oid': row[0],
             'question': row[2],
             'answer': row[5],
             'language': 'English',
@@ -77,7 +77,7 @@ def get_final_dataset_data(request):
 
         transliterated_entry = {
             'id': count,
-            'did': row[0],
+            'oid': row[0],
             'question': row[3],
             'answer': row[4],
             'language': 'Transliterated',
