@@ -63,6 +63,7 @@ def addToDataset(request):
 @api_view(['GET', 'POST'])
 def pushSuggestiveQA(request):
     if request.method == "GET":
+        print("Inssert new paraphrased data into the DB!")
         xlsx_file_path = '/media/robin/Documents/PersonalWorks/ibas_project/source/paraphrased_texts.xlsx'
         # new_update_dataset = '/home/tanjim/workstation/ibas-project/ibas-chat-operator-chatbot/data/ibas_final_dataset.xlsx'
         if os.path.exists(xlsx_file_path):
@@ -75,7 +76,7 @@ def pushSuggestiveQA(request):
                     # Column 1: Field 1, Column 2: Field 2, etc.
 
                     field1 = row[0]
-                    print(field1)
+                    # print(field1)
                     # Map other fields as needed
 
                     # Check if there are already exisiting same paraphrased text in the DB, only insert the new ones.

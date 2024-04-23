@@ -31,6 +31,8 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
+    'channels',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -75,6 +77,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'src.wsgi.application'
+ASGI_APPLICATION = "src.asgi.application"
 
 
 # Database
@@ -89,6 +92,27 @@ DATABASES = {
         'HOST': 'localhost',
         'PORT': '5432',
     }
+}
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [
+                ("127.0.0.1", 6379),
+            ],
+        },
+    },
+}
+
+
+CHANNELS = {
+    'DEFAULT_CHANNEL_LAYER': 'default',
+    'ALLOWED_HOSTS': ['172.16.6.91', 'ibasdap-api.celloscope.net'],
+    'MIDDLEWARE': [
+        'channels.middleware.CorsMiddleware',
+    ],
+    'CORS_ORIGIN_ALLOW_ALL': True,
 }
 
 
