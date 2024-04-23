@@ -2,7 +2,7 @@ from channels.generic.websocket import WebsocketConsumer
 from asgiref.sync import async_to_sync
 import json
 import requests
-
+from channels.layers import get_channel_layer
 
 
 # Customer Support Visitor Chat Consumer
@@ -12,6 +12,7 @@ class ModelTrainingStatisticsConsumer(WebsocketConsumer):
         super(ModelTrainingStatisticsConsumer, self).__init__(*args, **kwargs)
         # self.room_name = None
         self.room_group_name = None
+        self.channel_layer = None
     
     def connect(self):
         print("#"*50)
@@ -23,6 +24,7 @@ class ModelTrainingStatisticsConsumer(WebsocketConsumer):
         print(f"room-group name: {self.room_group_name}")
         print(f'Channel name: {self.channel_name}')
         
+        self.channel_layer = get_channel_layer()
 
         async_to_sync(self.channel_layer.group_add)(
             self.room_group_name,
@@ -38,7 +40,21 @@ class ModelTrainingStatisticsConsumer(WebsocketConsumer):
         
         print("Received from frontend websocket:", data)
 
+        async_to_sync(self.channel_layer.group_send)(
+            "mt_stat_socket",  # Replace "chat_room" with your actual group name
+            {
+                "type": "send_statistics",
+                "message": data
+            }
+        )
+
         print("#"*50)
+    
+    def send_statistics(self, event):
+        message = event['message']
+        self.send(text_data=json.dumps({
+            'message': message,
+        }))
 
     def disconnect(self, *args, **kwargs):
         print("#"*50)

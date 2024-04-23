@@ -35,6 +35,7 @@ def get_final_dataset_data(request):
     query = f"""
     SELECT * FROM public.final_dataset_operations_finaldataset
     WHERE 1 = 1
+    ORDER BY id DESC
     """
 
     if training_status:
