@@ -11,7 +11,7 @@ def detect_language(text):
         return 'Unknown'
 
 # Load the Excel file
-excel_file = '/home/user/Workstation/ibas-chat-operator/ibas-data-analytics-panel-backend/ibas_final_dataset.xlsx'
+excel_file = '/media/robin/Documents/PersonalWorks/ibas_project/source/ibas_final_dataset.xlsx'
 
 # Load the data from the Excel file
 data = pd.read_excel(excel_file, engine='openpyxl')

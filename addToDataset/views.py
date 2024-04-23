@@ -8,6 +8,8 @@ import os
 from .models import SuggestiveQuestions
 from .serializers import SuggestiveQuestionsSerializer
 from django.db import connection
+import requests
+from openpyxl import load_workbook
 
 
 @api_view(['POST'])
@@ -38,7 +40,8 @@ def addToDataset(request):
             }
             print("data:",data)
 
-            new_update_dataset = '/home/tanjim/workstation/ibas-project/ibas-chat-operator-chatbot/data/ibas_final_dataset.xlsx'
+            new_update_dataset = '/media/robin/Documents/PersonalWorks/ibas_project/source/ibas_final_dataset.xlsx'
+            # new_update_dataset = '/home/tanjim/workstation/ibas-project/ibas-chat-operator-chatbot/data/ibas_final_dataset.xlsx'
             existing_df = pd.read_excel(new_update_dataset, sheet_name='Sheet1', engine='openpyxl')
             data1 = pd.DataFrame({'Questions': [bangla_ques], 'Answers': [bangla_ans]})
             data2 = pd.DataFrame({'Questions': [tranliterated_ques], 'Answers': [bangla_ans]})
@@ -60,17 +63,40 @@ def addToDataset(request):
 @api_view(['GET', 'POST'])
 def pushSuggestiveQA(request):
     if request.method == "GET":
-        xlsx_file_path = '/home/doer/Music/ChatBot/source/paraphrased_texts.xlsx'
+        xlsx_file_path = '/media/robin/Documents/PersonalWorks/ibas_project/source/paraphrased_texts.xlsx'
         # new_update_dataset = '/home/tanjim/workstation/ibas-project/ibas-chat-operator-chatbot/data/ibas_final_dataset.xlsx'
         if os.path.exists(xlsx_file_path):
             try:
-                df = pd.read_excel(xlsx_file_path, sheet_name='Sheet1')
-                for index, row in df.iterrows():
-                    text=row['ParaphrasedText']
-                    # questions = SuggestiveQuestions.objects.filter(marked_for_removal=False)
-                    # serializer = SuggestiveQuestionsSerializer(questions, many=True)
-                    entry = SuggestiveQuestions(text=text,)
-                    entry.save()
+                wb = load_workbook(xlsx_file_path)
+                sheet = wb.active
+
+                for row in sheet.iter_rows(min_row=2, values_only=True):
+                    # Assuming the structure of your Excel file:
+                    # Column 1: Field 1, Column 2: Field 2, etc.
+
+                    field1 = row[0]
+                    print(field1)
+                    # Map other fields as needed
+
+                    # Check if there are already exisiting same paraphrased text in the DB, only insert the new ones.
+                    instances = SuggestiveQuestions.objects.filter(text=field1)
+                    if instances.exists():
+                        print("Found an exisiting paraphrased texts in the DB")
+                        # instance = instances.first()
+                    else:
+                        # Create an instance of your model
+                        instance = SuggestiveQuestions(text=field1)
+                        # Save the instance to the database
+                        instance.save()
+
+
+                # df = pd.read_excel(xlsx_file_path, sheet_name='Sheet1')
+                # for index, row in df.iterrows():
+                #     text=row['ParaphrasedText']
+                #     # questions = SuggestiveQuestions.objects.filter(marked_for_removal=False)
+                #     # serializer = SuggestiveQuestionsSerializer(questions, many=True)
+                #     entry = SuggestiveQuestions(text=text,)
+                #     entry.save()
                 return Response({'msg': 'Successful'}, status=status.HTTP_200_OK)
             except Exception as e:
                 return HttpResponse(f'Error importing questions: {str(e)}')
@@ -92,10 +118,10 @@ def suggestiveQA(request):
             SELECT * FROM public."addToDataset_suggestivequestions"
             WHERE text ILIKE %s 
             AND marked_for_removal = false
+            ORDER BY id DESC;
             """
             
             if text and not limit:
-                
                 cursor.execute(query, ['%' + text + '%'])
                 rows = cursor.fetchall()
                 count = len(rows)
@@ -112,9 +138,7 @@ def suggestiveQA(request):
                     questions.append(data)
                 # questions = SuggestiveQuestions.objects.filter(marked_for_removal=False,text__icontains=text)[offset:offset]
             elif limit and not text:
-                print("only limit")
-
-                questions = SuggestiveQuestions.objects.filter(marked_for_removal=False)[offset:offset + limit]
+                questions = SuggestiveQuestions.objects.filter(marked_for_removal=False).order_by('-id')[offset:offset + limit]
             elif limit and text:
                 cursor.execute(query, ['%' + text + '%'])
                 row = cursor.fetchall()
@@ -138,7 +162,7 @@ def suggestiveQA(request):
                 # questions = SuggestiveQuestions.objects.filter(marked_for_removal=False,question__icontains=text)[offset:offset+limit]
                 print('questions', questions)
             else:
-                questions = SuggestiveQuestions.objects.filter(marked_for_removal=False)
+                questions = SuggestiveQuestions.objects.filter(marked_for_removal=False).order_by('-id')
             serializer = SuggestiveQuestionsSerializer(questions, many=True)
             return Response({'data': serializer.data, 'count': count}, status=status.HTTP_200_OK)
         except Exception as e:
@@ -149,6 +173,40 @@ def suggestiveQA(request):
 @api_view(['GET'])
 def genSuggestiveQa(request):
     if request.method == "GET":
-        return Response({'msg': 'generate suggestive question QA'}, status=status.HTTP_200_OK)
-    return Response({'status': 'succes'}, status=status.HTTP_200_OK)
-    pass
+
+        # # TESTING *********************
+        # response = {
+        #     'status_code': 200
+        # }
+
+        # if response['status_code'] == 200:
+        #     requests.get('http://127.0.0.1:8082/push-suggestive-qa/')
+        #     return Response({
+        #         'status_code': 200,
+        #         'msg': 'Generate suggestive question QA successfully'
+        #         }, status=status.HTTP_200_OK)
+        
+
+        print("Invoke generate-suggestive-questions API")     # Data Clustering model to generate base form of augmented question with same meaning
+
+        url = 'http://127.0.0.1:5001/suggestive_ques_gen'  # Data Seggregator API
+
+        response = requests.get(url)
+
+        # # Check if the request was successful (status code 200)
+        if response.status_code == 200:
+            # Print the response content
+            print(response.text)
+            requests.get('http://127.0.0.1:8082/push-suggestive-qa/')   # Push the new paraphrased queries to db
+            return Response({
+                'status_code': 200,
+                'msg': 'Generate suggestive question QA successfully'
+                }, status=status.HTTP_200_OK)
+        else:
+            # Print an error message if the request was not successful
+            print(f"Failed to fetch data. Status code: {response.status_code}")
+        
+            return Response({
+                'status_code': 500,
+                'msg': 'Failed generate suggestive question QA'
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

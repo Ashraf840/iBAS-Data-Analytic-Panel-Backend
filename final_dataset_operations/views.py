@@ -13,14 +13,22 @@ from rest_framework.decorators import api_view
 from qaDatasetApp.models import qa_dataset as qadm
 from django.db import connection
 
+
 @api_view(['POST'])
 def get_final_dataset_data(request):
     offset = int(request.query_params.get('offset', 0))/3
     limit = int(request.query_params.get('limit', 0))/3
     text = request.query_params.get('searchText', '')
-    data = json.loads(request.body)
-    training_status = data.get('status', None)
-    print("BODY: ", training_status)
+
+    if request.body:
+        try:
+            data = json.loads(request.body)
+            training_status = data.get('status', None)
+            print("BODY: ", training_status)
+        except json.JSONDecodeError:
+            return Response({'error': 'Invalid JSON in request body'}, status=status.HTTP_400_BAD_REQUEST)
+    else:
+        training_status = None
 
     cursor = connection.cursor()
 
@@ -92,6 +100,88 @@ def get_final_dataset_data(request):
     }
 
     return Response(data, status=status.HTTP_200_OK)
+
+
+# # ORIGINAL ****************************
+# @api_view(['POST'])
+# def get_final_dataset_data(request):
+#     offset = int(request.query_params.get('offset', 0))/3
+#     limit = int(request.query_params.get('limit', 0))/3
+#     text = request.query_params.get('searchText', '')
+#     data = json.loads(request.body)
+#     training_status = data.get('status', None)
+#     print("BODY: ", training_status)
+
+#     cursor = connection.cursor()
+
+#     query = f"""
+#     SELECT * FROM public.final_dataset_operations_finaldataset
+#     WHERE 1 = 1
+#     """
+
+#     if training_status:
+#         query += f" AND status = '{training_status}'"
+    
+#     if text:
+#         query += f""" AND ( bangla_ques ILIKE '%{text}%' OR
+#           english_ques ILIKE '%{text}%' OR
+#           transliterated_ques ILIKE '%{text}%' OR
+#           bangla_ans ILIKE '%{text}%' OR
+#           english_ans ILIKE '%{text}%') """
+    
+#     cursor.execute(query)
+#     countRows = cursor.fetchall()
+#     totalcount = len(countRows)
+        
+#     if limit:
+#         query += f" limit {limit}"
+
+#     if offset:
+#         query += f" offset {offset}"
+
+#     cursor.execute(query)
+#     rows = cursor.fetchall()
+#     count = 0 
+#     simplified_data = []
+#     for row in rows:
+#         count += 1
+#         bangla_entry = {
+#             'id': count,
+#             'oid': row[0],
+#             'question': row[1],
+#             'answer': row[4],
+#             'language': 'Bangla',
+#             'status' : row[6],
+#         }
+#         simplified_data.append(bangla_entry)
+
+#         english_entry = {
+#             'id': count,
+#             'oid': row[0],
+#             'question': row[2],
+#             'answer': row[5],
+#             'language': 'English',
+#             'status' : row[6],
+#         }
+#         simplified_data.append(english_entry)
+
+#         transliterated_entry = {
+#             'id': count,
+#             'oid': row[0],
+#             'question': row[3],
+#             'answer': row[4],
+#             'language': 'Transliterated',
+#             'status' : row[6],
+
+#         }
+#         simplified_data.append(transliterated_entry)
+    
+#     data = {
+#         'count': totalcount * 3,
+#         'results': simplified_data
+#     }
+
+#     return Response(data, status=status.HTTP_200_OK)
 
 @csrf_exempt
 def add_to_dataset(request):

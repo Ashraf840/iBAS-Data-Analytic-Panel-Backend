@@ -1,16 +1,18 @@
 from django.core.management.base import BaseCommand
 import pandas as pd
 from openpyxl import load_workbook
-from langdetect import detect
 from final_dataset_operations.models import FinalDataset
+import sys
+sys.path.append("/media/robin/Documents/PersonalWorks/ibas_project/")
+from lang_detection.text_lang_detect import lang_detect
 
 class Command(BaseCommand):
     help = 'Import data from Excel file into FinalDataset model'
 
     def handle(self, *args, **options):
-        excel_file = '/home/zubair/workstation/TADAspreadsheet.xlsx'
+        # excel_file = '/home/zubair/workstation/TADAspreadsheet.xlsx'
         FinalDataset.objects.all().delete()
-        # excel_file = '/home/doer/Music/ChatBot/ibas-data-analytics-panel-backend/Final-updated-dataset.xlsx'
+        excel_file = '/media/robin/Documents/PersonalWorks/ibas_project/source/Final-updated-dataset.xlsx'
 
         data = pd.read_excel(excel_file, engine='openpyxl')
 
