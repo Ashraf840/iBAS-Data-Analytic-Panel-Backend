@@ -3,6 +3,7 @@ from asgiref.sync import async_to_sync
 import json
 import requests
 from channels.layers import get_channel_layer
+import re
 
 
 # Customer Support Visitor Chat Consumer
@@ -36,17 +37,24 @@ class ModelTrainingStatisticsConsumer(WebsocketConsumer):
     def receive(self, text_data=None, bytes_data=None):
         print("#"*50)
         print("[connect() method] Connected to backend consumer class: ModelTrainingStatisticsConsumer")
-        data = json.loads(text_data)
+        print("Raw text_data:", text_data)
+        # data = json.loads(text_data)
+        data = text_data
         
         print("Received from frontend websocket:", data)
 
-        async_to_sync(self.channel_layer.group_send)(
-            "mt_stat_socket",  # Replace "chat_room" with your actual group name
-            {
-                "type": "send_statistics",
-                "message": data
-            }
-        )
+        pattern = r"(\d+)%\|"
+        match = re.search(pattern, data)
+
+        if match:
+            percentage = match.group(1)
+            async_to_sync(self.channel_layer.group_send)(
+                "mt_stat_socket",  # Replace "chat_room" with your actual group name
+                {
+                    "type": "send_statistics",
+                    "message": percentage
+                }
+            )
 
         print("#"*50)
     
