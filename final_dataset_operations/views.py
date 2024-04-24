@@ -217,9 +217,12 @@ def clean_database_table(request):
 def start_training(request):
     if request.method == 'GET':
         try:
-            create_dataset(request)
+            # create_dataset(request)   # Make a backup of nul.yml, domain.yml, rules.yml, stories.yml file
             response = requests.get('http://127.0.0.1:5010/train_automation')
-            response.raise_for_status()
+            print("Start training automation response:", json.loads(response.text))
+            # response.raise_for_status()
+            response_data = json.loads(response.text)
+            return JsonResponse(response_data, status=200)
             
         except requests.exceptions.RequestException as e:
             print(f"Start training failed: {str(e)}")
