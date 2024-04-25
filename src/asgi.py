@@ -16,6 +16,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "src.settings")
 django.setup()
 
 import final_dataset_operations.routing as fdo_r
+import addToDataset.routing as atd_r
 
 from django.core.asgi import get_asgi_application
 
@@ -27,7 +28,8 @@ application = ProtocolTypeRouter(
         "http": django_asgi_app,
         'websocket': AuthMiddlewareStack(
             URLRouter(
-                fdo_r.websocket_urlpatterns
+                fdo_r.websocket_urlpatterns +
+                atd_r.websocket_urlpatterns
             ),
         ),
     }
