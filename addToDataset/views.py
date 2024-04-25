@@ -63,7 +63,10 @@ def addToDataset(request):
 @api_view(['GET', 'POST'])
 def pushSuggestiveQA(request):
     if request.method == "GET":
-        print("Inssert new paraphrased data into the DB!")
+        print("Insert new paraphrased data into the DB!")
+
+        # return Response({'msg': 'Successful'}, status=status.HTTP_200_OK)
+        
         xlsx_file_path = '/media/robin/Documents/PersonalWorks/ibas_project/source/paraphrased_texts.xlsx'
         # new_update_dataset = '/home/tanjim/workstation/ibas-project/ibas-chat-operator-chatbot/data/ibas_final_dataset.xlsx'
         if os.path.exists(xlsx_file_path):
@@ -198,7 +201,30 @@ def genSuggestiveQa(request):
         if response.status_code == 200:
             # Print the response content
             print(response.text)
-            requests.get('http://127.0.0.1:8082/push-suggestive-qa/')   # Push the new paraphrased queries to db
+
+
+
+
+
+
+
+
+
+
+
+            # NEED TO BE MOVED TO THE "ibas_data_seggregator" project
+            # requests.get('http://127.0.0.1:8082/push-suggestive-qa/')   # Push the new paraphrased queries to db; TODO: Shift from this backend to ibas_data_seggregator project & invoke inside the run.sh file 
+
+
+
+
+
+
+
+
+
+
+
             return Response({
                 'status_code': 200,
                 'msg': 'Generate suggestive question QA successfully'

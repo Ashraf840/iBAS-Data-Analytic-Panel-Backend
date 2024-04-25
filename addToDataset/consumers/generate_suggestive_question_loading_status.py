@@ -42,7 +42,7 @@ class GenerateSuggestiveQuestionLoadingStatusConsumer(WebsocketConsumer):
         print("Received from frontend websocket:", data)
 
         async_to_sync(self.channel_layer.group_send)(
-            "mt_stat_socket",  # Replace "chat_room" with your actual group name
+            "gen_sques_loading_status_socket",
             {
                 "type": "send_loading_status",
                 "message": data
