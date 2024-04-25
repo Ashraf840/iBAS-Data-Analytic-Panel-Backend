@@ -101,8 +101,9 @@ def pushSuggestiveQA(request):
                 #     # serializer = SuggestiveQuestionsSerializer(questions, many=True)
                 #     entry = SuggestiveQuestions(text=text,)
                 #     entry.save()
-                return Response({'msg': 'Successful'}, status=status.HTTP_200_OK)
+                return Response({'status_code': 200, 'msg': 'Successful'}, status=status.HTTP_200_OK)
             except Exception as e:
+                return Response({'status_code': 500, 'msg': 'Failed'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
                 return HttpResponse(f'Error importing questions: {str(e)}')
         return Response({'msg': 'Get all suggestive qna'}, status=status.HTTP_200_OK)
     if request.method == "POST":
